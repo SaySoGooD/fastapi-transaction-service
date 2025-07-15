@@ -37,7 +37,7 @@ class Transaction(Base):
     amount: Mapped[float] = mapped_column(Numeric(12, 2))
 
     __table_args__ = (
-        CheckConstraint('amount >= 0', name='check_positive_amount'),
+        CheckConstraint('amount >= 0', name='check_positive_amount'), # Валидация на уровне базы данных -> очень плохо
     )
 
     sender: Mapped[User] = relationship(

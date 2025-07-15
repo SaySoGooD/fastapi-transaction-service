@@ -10,11 +10,11 @@ from app.database.database import InitDB
 from app.services.rabbitmq import RabbitMQClient
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI): # Добавить try/except/finally и логирование ошибок
     InitDB()
     rabbitmq = RabbitMQClient(amqp_url=RABBITMQ_URL, queue_name=QUEUE_NAME)
     await rabbitmq.connect()
-    app.state.rabbitmq = rabbitmq  
+    app.state.rabbitmq = rabbitmq  # Хранить кроля здесь ужасное архитектурное решение
     yield
     await rabbitmq.close()
 
