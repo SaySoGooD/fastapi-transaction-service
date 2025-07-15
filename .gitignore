@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+
+.venv/
+
+.vscode/
+
+alembic/versions/__pycache__/
+alembic/__pycache__/
+
+.env
+
+*.swp
+*.swo
