@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True, encoding="UTF-8")
 
+
+# Все это вынести в dataclasses.dataclass и в под классы к нему
 IS_TESTING = os.getenv("IS_TESTING", "False").lower() == "true"
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")

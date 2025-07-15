@@ -9,7 +9,7 @@ from app.schemas.transaction import TransactionCreate
 
 class CRUDUsers:
     def __init__(self):
-        self._db = AsyncSessionManager()
+        self._db = AsyncSessionManager() # Класс должен получать уже готовую сессиию, а не их генератор(искл: бд SQLite)
 
     async def get_user_by_id(self, user_id: int) -> User | None:
         async with self._db.get_session() as session:
@@ -22,9 +22,9 @@ class CRUDUsers:
             session.add(user)
             try:
                 await session.commit()
-            except Exception as e:
+            except Exception as e: # e - unused
                 await session.rollback()
-                raise 
+                raise # raise e
             await session.refresh(user)
         return user
 
@@ -50,7 +50,7 @@ class CRUDTransactions:
             async with session.begin():
                 sender = await session.get(User, transaction.sender_id, with_for_update=True)
                 receiver = await session.get(User, transaction.receiver_id, with_for_update=True)
-                amount = Decimal(str(transaction.amount))
+                amount = Decimal(str(transaction.amount)) # Круто
                 sender.balance -= amount
                 receiver.balance += amount
 

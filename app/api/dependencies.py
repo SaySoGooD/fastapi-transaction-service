@@ -6,10 +6,12 @@ from app.services.rabbitmq import RabbitMQClient
 
 class Dependencies:
     def __init__(self):
-        self.crud_users = CRUDUsers()
-        self.crud_transactions = CRUDTransactions()
+        self.crud_users = CRUDUsers() # Переименовать в protected member
+        self.crud_transactions = CRUDTransactions() # Переименовать в protected member
 
-    async def verify_token(self, x_token: str = Header(...)):
+    # @staticmethod  Т.к. не используешь переменные из self
+    async def verify_token(self, x_token: str = Header(...)): # typing.Annotated и description в Header
+        # Также в хэдере указать alias = x-token (пишем не через _, а через - ). Также какой токен??? refresh/access/API
         """Dependency to verify API token."""
         if x_token != API_TOKEN:
             raise HTTPException(
