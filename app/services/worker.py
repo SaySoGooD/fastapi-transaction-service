@@ -5,12 +5,12 @@ from loguru import logger
 from sqlalchemy.exc import IntegrityError
 import aio_pika
 
-from app.config import QUEUE_NAME, RABBITMQ_URL
+from app.config import settings
 
-from app.database.database import InitDB
+from app.database.database import AsyncSessionManager, InitDB
 from app.database.crud import CRUDUsers, CRUDTransactions
 
-from app.schemas.user import UserCreate
+from app.schemas.user import UserData
 from app.schemas.transaction import TransactionCreate
 
 from app.services.rabbitmq import RabbitMQClient
@@ -29,6 +29,9 @@ class TaskRouter:
 
     async def route(self, task_data: dict):
         task_type = task_data.get("task")
+        if task_type is None:
+            logger.error("Task type is missing in the task data.")
+            return {"status": "error", "detail": "task type is missing"}
         data = task_data.get("data", {})
 
         handler = self.handlers.get(task_type)
@@ -52,7 +55,7 @@ class TaskRouter:
             return {"status": "error", "detail": "internal error"}
 
     async def handle_register_user(self, data: dict):
-        user_create = UserCreate(**data)
+        user_create = UserData(**data)
         try:
             await self.crud_users.create_user(user_create.username, user_create.password)
             logger.info(f"User registered: {user_create.username}")
@@ -140,9 +143,11 @@ class Worker:
 
 
 if __name__ == "__main__":
-    crud_users = CRUDUsers()
-    crud_transactions = CRUDTransactions()
-    rabbitmq = RabbitMQClient(amqp_url=RABBITMQ_URL, queue_name=QUEUE_NAME)
+    session_manager = AsyncSessionManager()
+    session = session_manager.get_session() 
+    crud_users = CRUDUsers(session=session)
+    crud_transactions = CRUDTransactions(session=session)
+    rabbitmq = RabbitMQClient(amqp_url=settings.rabbitmq.url, queue_name=settings.rabbitmq.queue_name)
     router = TaskRouter(crud_users, crud_transactions)
     worker = Worker(router, rabbitmq)
     asyncio.run(worker.run())

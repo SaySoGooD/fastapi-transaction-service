@@ -1,26 +1,26 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from loguru import logger
 import uvicorn
 
-from app.config import API_IP, API_PORT, QUEUE_NAME, RABBITMQ_URL
-
+from app.config import settings
 from app.api.handlers import main_router
 from app.database.database import InitDB
-from app.services.rabbitmq import RabbitMQClient
+from app.services.rabbitmq import rabbitmq
+
+InitDB()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    InitDB()
-    rabbitmq = RabbitMQClient(amqp_url=RABBITMQ_URL, queue_name=QUEUE_NAME)
     await rabbitmq.connect()
-    app.state.rabbitmq = rabbitmq  
     yield
     await rabbitmq.close()
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(main_router)
 
-
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host=API_IP, port=API_PORT, reload=True)
+    try:
+        uvicorn.run("app.main:app", host=settings.api.ip, port=settings.api.port, reload=True)
+    except Exception as e:
+        logger.error(f"Error starting server: {e}")

@@ -1,14 +1,14 @@
-from app.config import REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PASSWORD
+from app.config import settings
 from contextlib import asynccontextmanager
 
 import redis.asyncio as redis
 from loguru import logger
 
 redis_client = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    db=REDIS_DB,
-    password=REDIS_PASSWORD
+    host=settings.redis.host,
+    port=settings.redis.port,
+    db=settings.redis.db,
+    password=settings.redis.password
 )
 
 @asynccontextmanager

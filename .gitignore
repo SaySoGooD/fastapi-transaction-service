@@ -10,5 +10,9 @@ alembic/__pycache__/
 
 .env
 
+.env.example
+.mypy_cache/
+.pytest_cache/
+
 *.swp
 *.swo

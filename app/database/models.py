@@ -1,6 +1,7 @@
+from decimal import Decimal
 from typing import List
 
-from sqlalchemy import CheckConstraint, ForeignKey, Numeric, String
+from sqlalchemy import ForeignKey, Numeric, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -13,11 +14,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String, nullable=False)
-    balance: Mapped[float] = mapped_column(Numeric(12, 2), default=0, nullable=False)
-
-    __table_args__ = (
-        CheckConstraint('balance >= 0', name='check_positive_balance'),
-    )
+    balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0, nullable=False)
 
     sent_transactions: Mapped[List["Transaction"]] = relationship(
         back_populates="sender",
@@ -35,10 +32,6 @@ class Transaction(Base):
     sender_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     receiver_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     amount: Mapped[float] = mapped_column(Numeric(12, 2))
-
-    __table_args__ = (
-        CheckConstraint('amount >= 0', name='check_positive_amount'),
-    )
 
     sender: Mapped[User] = relationship(
         back_populates="sent_transactions",

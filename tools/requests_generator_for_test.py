@@ -5,11 +5,12 @@ import time
 import aiohttp
 from loguru import logger
 
-from app.config import API_IP, API_PORT
+from app.config import settings
 
 
 
-URL = f"http://{API_IP}:{API_PORT}/new-transaction"
+URL_TRANSACTION = f"http://{settings.api.ip}:{settings.api.port}/new-transaction"
+URL_LOGIN = f"http://{settings.api.ip}:{settings.api.port}/login"
 HEADERS = {
     "accept": "application/json",
     "Content-Type": "application/json",
@@ -17,6 +18,18 @@ HEADERS = {
 }
 
 request_counter = 0
+
+async def generate_login():
+    async with aiohttp.ClientSession() as session:
+        data = {"username": 'jake86', "password": "vk2@y1Up0DT_"}
+        try:
+            async with session.post(URL_LOGIN, json=data, headers=HEADERS) as response:
+                await response.text()
+                if response.status == 200:
+                    print(await response.text())
+        except Exception as e:
+            logger.error(f"Request failed: {e}")
+
 
 def generate_transaction():
     """
@@ -36,7 +49,7 @@ async def send_transaction(session: aiohttp.ClientSession):
     global request_counter
     data = generate_transaction()
     try:
-        async with session.post(URL, json=data, headers=HEADERS) as response:
+        async with session.post(URL_TRANSACTION, json=data, headers=HEADERS) as response:
             await response.text()
             if response.status == 200:
                 request_counter += 1
@@ -61,7 +74,7 @@ async def stress_test(session: aiohttp.ClientSession):
     """
     while True:
         start = time.perf_counter()
-        tasks = [send_transaction(session) for _ in range(100)]
+        tasks = [send_transaction(session) for _ in range(2)]
         await asyncio.gather(*tasks)
         elapsed = time.perf_counter() - start
         await asyncio.sleep(max(0, 1.0 - elapsed))
@@ -93,3 +106,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    # asyncio.run(generate_login())
